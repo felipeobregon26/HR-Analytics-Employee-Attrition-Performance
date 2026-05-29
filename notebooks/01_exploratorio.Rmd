@@ -1,0 +1,274 @@
+---
+title: "Análisis Exploratorio — IBM HR Analytics Employee Attrition"
+author: "Felipe Obregón Ochoa | Psicólogo UCN"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    theme: flatly
+    highlight: tango
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo    = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.width  = 10,
+  fig.height = 6
+)
+```
+
+# 1. Carga de librerías
+
+```{r librerias}
+library(tidyverse)  # manipulación y visualización de datos
+library(naniar)     # visualización de valores faltantes
+library(corrplot)   # matriz de correlaciones
+library(GGally)     # correlaciones con ggplot2
+```
+
+# 2. Carga de datos
+
+```{r carga-datos}
+# Cargar el CSV desde la carpeta data/
+df <- readr::read_csv("../data/WA_Fn-UseC_-HR-Employee-Attrition.csv")
+
+# Vista rápida de la estructura
+glimpse(df)
+```
+
+# 3. Inspección inicial
+
+```{r inspeccion}
+# Dimensiones del dataset
+cat("Filas:", nrow(df), "\n")
+cat("Columnas:", ncol(df), "\n")
+
+# Nombres de columnas
+names(df)
+
+# Resumen estadístico general
+summary(df)
+```
+
+```{r columnas-constantes}
+# Identificar columnas sin variación (no aportan al análisis)
+# En este dataset: EmployeeCount, Over18, StandardHours son constantes
+df %>%
+  select(EmployeeCount, Over18, StandardHours) %>%
+  distinct()
+
+# Eliminar columnas constantes y el ID (no aportan información)
+df <- df %>%
+  select(-EmployeeCount, -Over18, -StandardHours, -EmployeeNumber)
+
+cat("Dataset limpio:", nrow(df), "filas y", ncol(df), "columnas\n")
+```
+
+# 4. Valores faltantes
+
+```{r valores-faltantes}
+# Conteo de NA por columna
+na_conteo <- df %>%
+  summarise(across(everything(), ~ sum(is.na(.)))) %>%
+  pivot_longer(everything(), names_to = "variable", values_to = "na_count") %>%
+  filter(na_count > 0)
+
+if (nrow(na_conteo) == 0) {
+  cat("✓ No hay valores faltantes en el dataset.\n")
+} else {
+  print(na_conteo)
+}
+
+# Visualización de valores faltantes
+naniar::vis_miss(df) +
+  labs(title = "Mapa de valores faltantes",
+       subtitle = "IBM HR Analytics Dataset")
+```
+
+# 5. Variable objetivo: Attrition
+
+```{r attrition-distribucion}
+# Frecuencia absoluta y relativa
+tabla_attrition <- df %>%
+  count(Attrition) %>%
+  mutate(
+    porcentaje    = n / sum(n) * 100,
+    etiqueta      = paste0(round(porcentaje, 1), "%")
+  )
+
+print(tabla_attrition)
+
+# Gráfico de barras con porcentaje
+ggplot(tabla_attrition, aes(x = Attrition, y = porcentaje, fill = Attrition)) +
+  geom_col(width = 0.5, show.legend = FALSE) +
+  geom_text(aes(label = etiqueta), vjust = -0.5, size = 5, fontface = "bold") +
+  scale_fill_manual(values = c("No" = "#2196F3", "Yes" = "#FF9800")) +
+  scale_y_continuous(limits = c(0, 100), labels = scales::percent_format(scale = 1)) +
+  theme_minimal(base_size = 13) +
+  labs(
+    title    = "Distribución de Rotación Laboral",
+    subtitle = "Dataset IBM HR Analytics — 1.470 empleados",
+    x        = "Rotación (Attrition)",
+    y        = "Porcentaje (%)",
+    caption  = "Fuente: IBM HR Analytics Dataset — Kaggle"
+  )
+```
+
+# 6. Análisis univariado — Variables numéricas
+
+```{r histogramas, fig.height=8}
+# Variables numéricas clave para RRHH
+vars_numericas <- df %>%
+  select(Age, MonthlyIncome, YearsAtCompany, TotalWorkingYears)
+
+# Histogramas
+vars_numericas %>%
+  pivot_longer(everything(), names_to = "variable", values_to = "valor") %>%
+  ggplot(aes(x = valor, fill = variable)) +
+  geom_histogram(bins = 30, color = "white", show.legend = FALSE) +
+  facet_wrap(~ variable, scales = "free", ncol = 2) +
+  scale_fill_brewer(palette = "Set2") +
+  theme_minimal(base_size = 12) +
+  labs(
+    title   = "Distribución de Variables Numéricas Clave",
+    x       = "Valor",
+    y       = "Frecuencia",
+    caption = "Fuente: IBM HR Analytics Dataset"
+  )
+```
+
+```{r boxplots-attrition, fig.height=8}
+# Boxplots comparando distribución según Attrition
+df %>%
+  select(Attrition, Age, MonthlyIncome, YearsAtCompany, TotalWorkingYears) %>%
+  pivot_longer(-Attrition, names_to = "variable", values_to = "valor") %>%
+  ggplot(aes(x = Attrition, y = valor, fill = Attrition)) +
+  geom_boxplot(alpha = 0.7, outlier.shape = 21) +
+  facet_wrap(~ variable, scales = "free_y", ncol = 2) +
+  scale_fill_manual(values = c("No" = "#2196F3", "Yes" = "#FF9800")) +
+  theme_minimal(base_size = 12) +
+  labs(
+    title    = "Distribución de Variables Numéricas según Rotación",
+    subtitle = "Comparación entre empleados que se fueron vs. se quedaron",
+    x        = "Rotación",
+    y        = "Valor",
+    fill     = "Rotación",
+    caption  = "Fuente: IBM HR Analytics Dataset"
+  )
+```
+
+# 7. Análisis de variables categóricas
+
+```{r tabla-department}
+# Tabla de contingencia: Departamento vs Attrition
+tabla_dept <- df %>%
+  count(Department, Attrition) %>%
+  group_by(Department) %>%
+  mutate(porcentaje = round(n / sum(n) * 100, 1)) %>%
+  ungroup()
+
+print(tabla_dept)
+```
+
+```{r tabla-jobrole}
+# Tabla de contingencia: JobRole vs Attrition
+tabla_jobrole <- df %>%
+  count(JobRole, Attrition) %>%
+  group_by(JobRole) %>%
+  mutate(porcentaje = round(n / sum(n) * 100, 1)) %>%
+  filter(Attrition == "Yes") %>%
+  arrange(desc(porcentaje))
+
+print(tabla_jobrole)
+```
+
+```{r barras-apiladas-dept}
+# Gráfico de barras apiladas: Departamento vs Attrition
+df %>%
+  count(Department, Attrition) %>%
+  group_by(Department) %>%
+  mutate(porcentaje = n / sum(n) * 100) %>%
+  ggplot(aes(x = Department, y = porcentaje, fill = Attrition)) +
+  geom_col(position = "fill") +
+  geom_text(aes(label = paste0(round(porcentaje, 1), "%")),
+            position = position_fill(vjust = 0.5),
+            color = "white", size = 4, fontface = "bold") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_manual(values = c("No" = "#2196F3", "Yes" = "#FF9800")) +
+  theme_minimal(base_size = 13) +
+  labs(
+    title    = "Tasa de Rotación por Departamento",
+    subtitle = "Proporción de empleados que se fueron vs. se quedaron",
+    x        = "Departamento",
+    y        = "Proporción",
+    fill     = "Rotación",
+    caption  = "Fuente: IBM HR Analytics Dataset"
+  )
+```
+
+# 8. Matriz de correlaciones
+
+```{r correlaciones, fig.height=8}
+# Seleccionar solo variables numéricas
+vars_cor <- df %>%
+  select(where(is.numeric)) %>%
+  # Agregar Attrition como 0/1 para incluirla en la correlación
+  bind_cols(Attrition_num = ifelse(df$Attrition == "Yes", 1, 0))
+
+# Calcular matriz de correlación
+matriz_cor <- cor(vars_cor, use = "complete.obs")
+
+# Visualizar
+corrplot(matriz_cor,
+         method  = "color",
+         type    = "upper",
+         tl.cex  = 0.7,
+         tl.col  = "black",
+         addCoef.col = "black",
+         number.cex  = 0.5,
+         col     = colorRampPalette(c("#2196F3", "white", "#FF9800"))(200),
+         title   = "Matriz de Correlaciones — Variables Numéricas",
+         mar     = c(0, 0, 2, 0))
+```
+
+# 9. Conclusiones preliminares del EDA
+
+```{r conclusiones}
+# Tasa general de rotación
+tasa_rotacion <- mean(df$Attrition == "Yes") * 100
+
+# Ingreso promedio por grupo
+ingreso_promedio <- df %>%
+  group_by(Attrition) %>%
+  summarise(
+    ingreso_medio  = round(mean(MonthlyIncome), 0),
+    edad_media     = round(mean(Age), 1),
+    anios_empresa  = round(mean(YearsAtCompany), 1)
+  )
+
+cat("=== HALLAZGOS PRELIMINARES ===\n\n")
+cat("Tasa general de rotación:", round(tasa_rotacion, 1), "%\n\n")
+print(ingreso_promedio)
+```
+
+**Interpretación para RRHH:**
+
+Este análisis exploratorio revela que la tasa de rotación en el dataset es de aproximadamente **16%**, lo cual está por encima del promedio industrial recomendado (10-12%). Los primeros hallazgos sugieren que:
+
+- Los empleados que se van tienen **menores ingresos mensuales** en promedio
+- La rotación no es homogénea entre departamentos ni roles
+- Variables como horas extra (*OverTime*) y satisfacción laboral aparecen como posibles factores clave
+
+Estos patrones serán explorados en profundidad en los notebooks de visualización y modelado predictivo.
+
+---
+
+```{r session-info}
+# Información de sesión para reproducibilidad
+sessionInfo()
+```
