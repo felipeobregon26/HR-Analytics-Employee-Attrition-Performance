@@ -79,15 +79,17 @@ na_conteo <- df %>%
   filter(na_count > 0)
 
 if (nrow(na_conteo) == 0) {
-  cat("✓ No hay valores faltantes en el dataset.\n")
+  cat(" No hay valores faltantes en el dataset. Todas las variables están completas.\n")
+  cat(" Total de celdas revisadas:", nrow(df) * ncol(df), "\n")
 } else {
-  print(na_conteo)
+  # Si hubiera NAs, mostrar gráfico de barras horizontal
+  ggplot(na_conteo, aes(x = reorder(variable, na_count), y = na_count)) +
+    geom_col(fill = "#FF9800") +
+    coord_flip() +
+    theme_minimal() +
+    labs(title = "Variables con valores faltantes",
+         x = NULL, y = "Cantidad de NA")
 }
-
-# Visualización de valores faltantes
-naniar::vis_miss(df) +
-  labs(title = "Mapa de valores faltantes",
-       subtitle = "IBM HR Analytics Dataset")
 ```
 
 # 5. Variable objetivo: Attrition
