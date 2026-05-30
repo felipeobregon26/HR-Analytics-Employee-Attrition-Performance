@@ -1,0 +1,345 @@
+---
+title: "Visualizaciones — IBM HR Analytics Employee Attrition"
+author: "Felipe Obregón Ochoa | Psicólogo UCN"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    theme: flatly
+    highlight: tango
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo       = TRUE,
+  message    = FALSE,
+  warning    = FALSE,
+  fig.width  = 10,
+  fig.height = 6
+)
+```
+
+```{r librerias}
+library(tidyverse)
+library(patchwork)  # combinar múltiples gráficos
+```
+
+```{r carga-datos}
+df <- readr::read_csv("../data/WA_Fn-UseC_-HR-Employee-Attrition.csv")
+
+# Eliminar columnas constantes (mismo criterio que notebook 01)
+df <- df %>%
+  select(-EmployeeCount, -Over18, -StandardHours, -EmployeeNumber)
+```
+
+# 1. Tasa de rotación por Departamento
+
+```{r viz-departamento}
+plot_dept <- df %>%
+  count(Department, Attrition) %>%
+  group_by(Department) %>%
+  mutate(tasa = n / sum(n) * 100) %>%
+  filter(Attrition == "Yes") %>%
+  ggplot(aes(x = reorder(Department, tasa), y = tasa, fill = tasa)) +
+  geom_col(width = 0.6, show.legend = FALSE) +
+  geom_text(aes(label = paste0(round(tasa, 1), "%")),
+            hjust = -0.2, size = 4.5, fontface = "bold") +
+  coord_flip() +
+  scale_fill_gradient(low = "#90CAF9", high = "#1565C0") +
+  scale_y_continuous(limits = c(0, 35)) +
+  theme_minimal(base_size = 13) +
+  labs(
+    title    = "Tasa de Rotación por Departamento",
+    subtitle = "Porcentaje de empleados que dejaron la organización",
+    x        = NULL,
+    y        = "Tasa de rotación (%)",
+    caption  = "Fuente: IBM HR Analytics Dataset"
+  )
+
+plot_dept
+
+ggsave("../outputs/plots/01_rotacion_por_departamento.png",
+       plot_dept, width = 10, height = 5, dpi = 150)
+```
+
+# 2. Tasa de rotación por JobRole (lollipop chart)
+
+```{r viz-jobrole}
+plot_jobrole <- df %>%
+  count(JobRole, Attrition) %>%
+  group_by(JobRole) %>%
+  mutate(tasa = n / sum(n) * 100) %>%
+  filter(Attrition == "Yes") %>%
+  ggplot(aes(x = reorder(JobRole, tasa), y = tasa)) +
+  geom_segment(aes(xend = reorder(JobRole, tasa), y = 0, yend = tasa),
+               color = "#90CAF9", linewidth = 1.2) +
+  geom_point(aes(size = tasa, color = tasa), show.legend = FALSE) +
+  geom_text(aes(label = paste0(round(tasa, 1), "%")),
+            hjust = -0.4, size = 3.8) +
+  coord_flip() +
+  scale_color_gradient(low = "#90CAF9", high = "#1565C0") +
+  scale_size_continuous(range = c(3, 8)) +
+  scale_y_continuous(limits = c(0, 55)) +
+  theme_minimal(base_size = 12) +
+  labs(
+    title    = "Tasa de Rotación por Cargo",
+    subtitle = "Los roles con mayor exposición al riesgo de salida",
+    x        = NULL,
+    y        = "Tasa de rotación (%)",
+    caption  = "Fuente: IBM HR Analytics Dataset"
+  )
+
+plot_jobrole
+
+ggsave("../outputs/plots/02_rotacion_por_cargo.png",
+       plot_jobrole, width = 10, height = 6, dpi = 150)
+```
+
+# 3. Distribución de ingreso mensual por Attrition (violin + boxplot)
+
+```{r viz-ingreso}
+plot_ingreso <- df %>%
+  ggplot(aes(x = Attrition, y = MonthlyIncome, fill = Attrition)) +
+  geom_violin(alpha = 0.4, trim = FALSE) +
+  geom_boxplot(width = 0.15, alpha = 0.8, outlier.shape = 21,
+               outlier.size = 2) +
+  scale_fill_manual(values = c("No" = "#2196F3", "Yes" = "#FF9800")) +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "USD ")) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none") +
+  labs(
+    title    = "Distribución del Ingreso Mensual según Rotación",
+    subtitle = "Los empleados que se van tienen ingresos consistentemente menores",
+    x        = "Rotación",
+    y        = "Ingreso Mensual (USD)",
+    caption  = "Fuente: IBM HR Analytics Dataset"
+  )
+
+plot_ingreso
+
+ggsave("../outputs/plots/03_ingreso_por_attrition.png",
+       plot_ingreso, width = 8, height = 6, dpi = 150)
+```
+
+# 4. Heatmap de satisfacción laboral × rotación
+
+```{r viz-heatmap}
+# Calcular tasa de rotación promedio por nivel de satisfacción
+heatmap_data <- df %>%
+  select(Attrition, JobSatisfaction, EnvironmentSatisfaction, WorkLifeBalance) %>%
+  mutate(Attrition_num = ifelse(Attrition == "Yes", 1, 0)) %>%
+  pivot_longer(c(JobSatisfaction, EnvironmentSatisfaction, WorkLifeBalance),
+               names_to = "dimension", values_to = "nivel") %>%
+  group_by(dimension, nivel) %>%
+  summarise(tasa_rotacion = mean(Attrition_num) * 100, .groups = "drop") %>%
+  mutate(
+    dimension = recode(dimension,
+      "JobSatisfaction"         = "Satisfacción\nLaboral",
+      "EnvironmentSatisfaction" = "Satisfacción con\nel Ambiente",
+      "WorkLifeBalance"         = "Balance\nVida-Trabajo"
+    ),
+    nivel_label = recode(as.character(nivel),
+      "1" = "Bajo", "2" = "Medio", "3" = "Alto", "4" = "Muy Alto"
+    )
+  )
+
+plot_heatmap <- heatmap_data %>%
+  ggplot(aes(x = dimension, y = factor(nivel_label, levels = c("Bajo","Medio","Alto","Muy Alto")),
+             fill = tasa_rotacion)) +
+  geom_tile(color = "white", linewidth = 1.5) +
+  geom_text(aes(label = paste0(round(tasa_rotacion, 1), "%")),
+            size = 5, fontface = "bold", color = "white") +
+  scale_fill_gradient(low = "#90CAF9", high = "#1565C0",
+                      name = "Tasa de\nrotación (%)") +
+  theme_minimal(base_size = 13) +
+  labs(
+    title    = "Tasa de Rotación según Dimensiones de Satisfacción",
+    subtitle = "A menor satisfacción, mayor probabilidad de salida",
+    x        = NULL,
+    y        = "Nivel de satisfacción",
+    caption  = "Fuente: IBM HR Analytics Dataset"
+  )
+
+plot_heatmap
+
+ggsave("../outputs/plots/04_heatmap_satisfaccion.png",
+       plot_heatmap, width = 10, height = 6, dpi = 150)
+```
+
+# 5. Impacto de horas extra (OverTime) en la rotación
+
+```{r viz-overtime}
+plot_overtime <- df %>%
+  count(OverTime, Attrition) %>%
+  group_by(OverTime) %>%
+  mutate(tasa = n / sum(n) * 100) %>%
+  filter(Attrition == "Yes") %>%
+  ggplot(aes(x = OverTime, y = tasa, fill = OverTime)) +
+  geom_col(width = 0.5, show.legend = FALSE) +
+  geom_text(aes(label = paste0(round(tasa, 1), "%")),
+            vjust = -0.5, size = 6, fontface = "bold") +
+  scale_fill_manual(values = c("No" = "#2196F3", "Yes" = "#FF9800")) +
+  scale_y_continuous(limits = c(0, 50)) +
+  theme_minimal(base_size = 14) +
+  labs(
+    title    = "Rotación según Horas Extra (OverTime)",
+    subtitle = "Quienes hacen horas extra tienen más del doble de probabilidad de irse",
+    x        = "¿Realiza horas extra?",
+    y        = "Tasa de rotación (%)",
+    caption  = "Fuente: IBM HR Analytics Dataset"
+  )
+
+plot_overtime
+
+ggsave("../outputs/plots/05_rotacion_overtime.png",
+       plot_overtime, width = 7, height = 6, dpi = 150)
+```
+
+# 6. Años en la empresa y rotación
+
+```{r viz-anios}
+plot_anios <- df %>%
+  mutate(tramo_anios = cut(YearsAtCompany,
+                           breaks = c(-1, 1, 3, 5, 10, 20, 40),
+                           labels = c("0-1", "2-3", "4-5", "6-10", "11-20", "21+"))) %>%
+  count(tramo_anios, Attrition) %>%
+  group_by(tramo_anios) %>%
+  mutate(tasa = n / sum(n) * 100) %>%
+  filter(Attrition == "Yes") %>%
+  ggplot(aes(x = tramo_anios, y = tasa, group = 1)) +
+  geom_line(color = "#1565C0", linewidth = 1.5) +
+  geom_point(aes(size = tasa), color = "#FF9800",
+             show.legend = FALSE) +
+  geom_text(aes(label = paste0(round(tasa, 1), "%")),
+            vjust = -1.2, size = 4) +
+  scale_y_continuous(limits = c(0, 55)) +
+  theme_minimal(base_size = 13) +
+  labs(
+    title    = "Tasa de Rotación según Antigüedad en la Empresa",
+    subtitle = "El riesgo es máximo en los primeros años — patrón típico de onboarding crítico",
+    x        = "Años en la empresa",
+    y        = "Tasa de rotación (%)",
+    caption  = "Fuente: IBM HR Analytics Dataset"
+  )
+
+plot_anios
+
+ggsave("../outputs/plots/06_rotacion_por_antiguedad.png",
+       plot_anios, width = 10, height = 6, dpi = 150)
+```
+
+# 7. Edad vs ingreso mensual, coloreado por Attrition
+
+```{r viz-scatter}
+plot_scatter <- df %>%
+  ggplot(aes(x = Age, y = MonthlyIncome, color = Attrition, alpha = Attrition)) +
+  geom_point(size = 2) +
+  geom_smooth(method = "lm", se = TRUE, linewidth = 1.2) +
+  scale_color_manual(values = c("No" = "#2196F3", "Yes" = "#FF9800"),
+                     name = "Rotación") +
+  scale_alpha_manual(values = c("No" = 0.3, "Yes" = 0.7), guide = "none") +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "USD ")) +
+  theme_minimal(base_size = 13) +
+  labs(
+    title    = "Edad vs Ingreso Mensual según Rotación",
+    subtitle = "Los empleados que se van son más jóvenes y con menores ingresos",
+    x        = "Edad (años)",
+    y        = "Ingreso Mensual (USD)",
+    caption  = "Fuente: IBM HR Analytics Dataset"
+  )
+
+plot_scatter
+
+ggsave("../outputs/plots/07_edad_ingreso_attrition.png",
+       plot_scatter, width = 10, height = 6, dpi = 150)
+```
+
+# 8. Dashboard — 4 métricas clave
+
+```{r viz-dashboard, fig.width=12, fig.height=10}
+# Métrica 1: Rotación global
+p1 <- df %>%
+  count(Attrition) %>%
+  mutate(pct = n / sum(n) * 100) %>%
+  ggplot(aes(x = Attrition, y = pct, fill = Attrition)) +
+  geom_col(width = 0.5, show.legend = FALSE) +
+  geom_text(aes(label = paste0(round(pct, 1), "%")),
+            vjust = -0.4, fontface = "bold", size = 5) +
+  scale_fill_manual(values = c("No" = "#2196F3", "Yes" = "#FF9800")) +
+  scale_y_continuous(limits = c(0, 100)) +
+  theme_minimal(base_size = 11) +
+  labs(title = "Rotación Global", x = NULL, y = "%")
+
+# Métrica 2: OverTime
+p2 <- df %>%
+  count(OverTime, Attrition) %>%
+  group_by(OverTime) %>%
+  mutate(pct = n / sum(n) * 100) %>%
+  filter(Attrition == "Yes") %>%
+  ggplot(aes(x = OverTime, y = pct, fill = OverTime)) +
+  geom_col(width = 0.5, show.legend = FALSE) +
+  geom_text(aes(label = paste0(round(pct, 1), "%")),
+            vjust = -0.4, fontface = "bold", size = 5) +
+  scale_fill_manual(values = c("No" = "#2196F3", "Yes" = "#FF9800")) +
+  scale_y_continuous(limits = c(0, 50)) +
+  theme_minimal(base_size = 11) +
+  labs(title = "Rotación por Horas Extra", x = NULL, y = "%")
+
+# Métrica 3: Departamento
+p3 <- df %>%
+  count(Department, Attrition) %>%
+  group_by(Department) %>%
+  mutate(pct = n / sum(n) * 100) %>%
+  filter(Attrition == "Yes") %>%
+  ggplot(aes(x = reorder(Department, pct), y = pct, fill = pct)) +
+  geom_col(show.legend = FALSE) +
+  geom_text(aes(label = paste0(round(pct, 1), "%")),
+            hjust = -0.2, size = 4) +
+  coord_flip() +
+  scale_fill_gradient(low = "#90CAF9", high = "#1565C0") +
+  scale_y_continuous(limits = c(0, 30)) +
+  theme_minimal(base_size = 11) +
+  labs(title = "Rotación por Departamento", x = NULL, y = "%")
+
+# Métrica 4: Satisfacción laboral
+p4 <- df %>%
+  mutate(Attrition_num = ifelse(Attrition == "Yes", 1, 0)) %>%
+  group_by(JobSatisfaction) %>%
+  summarise(tasa = mean(Attrition_num) * 100) %>%
+  ggplot(aes(x = factor(JobSatisfaction), y = tasa, fill = tasa)) +
+  geom_col(show.legend = FALSE) +
+  geom_text(aes(label = paste0(round(tasa, 1), "%")),
+            vjust = -0.4, size = 4) +
+  scale_fill_gradient(low = "#90CAF9", high = "#1565C0") +
+  scale_y_continuous(limits = c(0, 25)) +
+  scale_x_discrete(labels = c("1" = "Bajo", "2" = "Medio",
+                               "3" = "Alto", "4" = "Muy Alto")) +
+  theme_minimal(base_size = 11) +
+  labs(title = "Rotación por Satisfacción Laboral", x = NULL, y = "%")
+
+# Combinar con patchwork
+dashboard <- (p1 + p2) / (p3 + p4) +
+  plot_annotation(
+    title    = "Dashboard — Factores Clave de Rotación Laboral",
+    subtitle = "IBM HR Analytics Dataset | Felipe Obregón Ochoa",
+    caption  = "Fuente: IBM HR Analytics Dataset — Kaggle",
+    theme    = theme(
+      plot.title    = element_text(size = 16, face = "bold"),
+      plot.subtitle = element_text(size = 12, color = "gray40")
+    )
+  )
+
+dashboard
+
+ggsave("../outputs/plots/08_dashboard_metricas.png",
+       dashboard, width = 12, height = 10, dpi = 150)
+```
+
+---
+
+```{r session-info}
+sessionInfo()
+```
