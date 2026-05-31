@@ -1,0 +1,308 @@
+---
+title: "Modelo Predictivo de Rotación — IBM HR Analytics"
+author: "Felipe Obregón Ochoa | Psicólogo UCN"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    theme: flatly
+    highlight: tango
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo       = TRUE,
+  message    = FALSE,
+  warning    = FALSE,
+  fig.width  = 10,
+  fig.height = 6
+)
+```
+
+```{r librerias}
+library(tidyverse)
+library(caret)       # train/test split y métricas
+library(pROC)        # curva ROC
+library(ranger)      # random forest eficiente
+library(recipes)     # preprocesamiento
+```
+
+# 1. Carga y preparación de datos
+
+```{r carga-datos}
+df <- readr::read_csv("../data/WA_Fn-UseC_-HR-Employee-Attrition.csv")
+
+# Eliminar columnas constantes
+df <- df %>%
+  select(-EmployeeCount, -Over18, -StandardHours, -EmployeeNumber)
+
+# Convertir Attrition a factor binario (requerido para clasificación)
+df <- df %>%
+  mutate(Attrition = factor(Attrition, levels = c("No", "Yes")))
+
+cat("Distribución de la variable objetivo:\n")
+table(df$Attrition)
+cat("\nProporción:\n")
+prop.table(table(df$Attrition))
+```
+
+```{r variables-categoricas}
+# Convertir todas las variables de texto a factor
+df <- df %>%
+  mutate(across(where(is.character), as.factor))
+
+glimpse(df)
+```
+
+# 2. División train / test
+
+```{r train-test}
+# Semilla para reproducibilidad — cualquier persona que ejecute
+# este código obtendrá exactamente los mismos resultados
+set.seed(42)
+
+# Índices para el conjunto de entrenamiento (70%)
+indice_train <- createDataPartition(df$Attrition, p = 0.70, list = FALSE)
+
+train <- df[ indice_train, ]
+test  <- df[-indice_train, ]
+
+cat("Filas en entrenamiento:", nrow(train), "\n")
+cat("Filas en prueba:", nrow(test), "\n\n")
+
+# Verificar que la proporción de Attrition se mantiene en ambos conjuntos
+cat("Proporción Attrition en train:\n")
+prop.table(table(train$Attrition))
+cat("\nProporción Attrition en test:\n")
+prop.table(table(test$Attrition))
+```
+
+# 3. Regresión Logística
+
+```{r modelo-logistico}
+# Ajustar modelo con todas las variables disponibles
+modelo_logistico <- glm(
+  Attrition ~ .,
+  data   = train,
+  family = binomial(link = "logit")
+)
+
+summary(modelo_logistico)
+```
+
+```{r odds-ratios}
+# Odds Ratios — interpretación para RRHH
+# OR > 1: aumenta probabilidad de rotación
+# OR < 1: disminuye probabilidad de rotación
+or_tabla <- exp(coef(modelo_logistico)) %>%
+  as.data.frame() %>%
+  rownames_to_column("variable") %>%
+  rename(odds_ratio = ".") %>%
+  filter(variable != "(Intercept)") %>%
+  arrange(desc(odds_ratio)) %>%
+  mutate(
+    direccion = ifelse(odds_ratio > 1, "Aumenta rotación", "Disminuye rotación"),
+    odds_ratio = round(odds_ratio, 3)
+  )
+
+# Top 10 variables más influyentes
+or_tabla %>% head(10) %>% print()
+```
+
+```{r predicciones-logistico}
+# Predecir probabilidades en el conjunto de prueba
+prob_logistico <- predict(modelo_logistico, newdata = test, type = "response")
+
+# Convertir probabilidades a clases con umbral 0.5
+pred_logistico <- factor(
+  ifelse(prob_logistico > 0.5, "Yes", "No"),
+  levels = c("No", "Yes")
+)
+
+# Matriz de confusión
+conf_log <- confusionMatrix(pred_logistico, test$Attrition, positive = "Yes")
+print(conf_log)
+```
+
+```{r curva-roc-logistico}
+# Curva ROC
+roc_logistico <- roc(
+  response  = test$Attrition,
+  predictor = prob_logistico,
+  levels    = c("No", "Yes")
+)
+
+# Graficar
+plot(roc_logistico,
+     col     = "#1565C0",
+     lwd     = 2.5,
+     main    = paste("Curva ROC — Regresión Logística | AUC =",
+                     round(auc(roc_logistico), 3)),
+     xlab    = "Tasa de Falsos Positivos (1 - Especificidad)",
+     ylab    = "Tasa de Verdaderos Positivos (Sensibilidad)")
+abline(a = 0, b = 1, lty = 2, col = "gray50")
+```
+
+# 4. Random Forest
+
+```{r modelo-rf}
+# Ajustar Random Forest con ranger
+# num.trees = 500: construye 500 árboles de decisión
+# importance = "impurity": calcula importancia de variables
+set.seed(42)
+
+modelo_rf <- ranger(
+  Attrition ~ .,
+  data        = train,
+  num.trees   = 500,
+  importance  = "impurity",
+  probability = TRUE  # necesario para obtener probabilidades y AUC
+)
+
+cat("Random Forest entrenado con", modelo_rf$num.trees, "árboles\n")
+cat("Variables utilizadas:", modelo_rf$num.independent.variables, "\n")
+```
+
+```{r predicciones-rf}
+# Predecir en test
+pred_rf_prob <- predict(modelo_rf, data = test)$predictions[, "Yes"]
+
+# Convertir a clases
+pred_rf_clase <- factor(
+  ifelse(pred_rf_prob > 0.5, "Yes", "No"),
+  levels = c("No", "Yes")
+)
+
+# Matriz de confusión
+conf_rf <- confusionMatrix(pred_rf_clase, test$Attrition, positive = "Yes")
+print(conf_rf)
+```
+
+```{r importancia-variables, fig.height=8}
+# Extraer importancia de variables
+importancia <- data.frame(
+  variable    = names(modelo_rf$variable.importance),
+  importancia = modelo_rf$variable.importance
+) %>%
+  arrange(desc(importancia)) %>%
+  head(15)  # Top 15 variables
+
+# Gráfico de importancia
+plot_importancia <- ggplot(importancia,
+                           aes(x = reorder(variable, importancia),
+                               y = importancia,
+                               fill = importancia)) +
+  geom_col(show.legend = FALSE) +
+  geom_text(aes(label = round(importancia, 0)),
+            hjust = -0.2, size = 3.8) +
+  coord_flip() +
+  scale_fill_gradient(low = "#90CAF9", high = "#1565C0") +
+  scale_y_continuous(limits = c(0, max(importancia$importancia) * 1.15)) +
+  theme_minimal(base_size = 12) +
+  labs(
+    title    = "Top 15 Variables Predictoras de Rotación",
+    subtitle = "Importancia según Random Forest (impureza de Gini)",
+    x        = NULL,
+    y        = "Importancia",
+    caption  = "Fuente: IBM HR Analytics Dataset"
+  )
+
+plot_importancia
+
+ggsave("../outputs/plots/09_importancia_variables_rf.png",
+       plot_importancia, width = 10, height = 7, dpi = 150)
+```
+
+```{r curva-roc-rf}
+# Curva ROC del Random Forest
+roc_rf <- roc(
+  response  = test$Attrition,
+  predictor = pred_rf_prob,
+  levels    = c("No", "Yes")
+)
+
+# Comparar ambas curvas ROC en un mismo gráfico
+plot(roc_logistico,
+     col  = "#1565C0",
+     lwd  = 2.5,
+     main = "Comparación Curvas ROC — Regresión Logística vs Random Forest",
+     xlab = "Tasa de Falsos Positivos",
+     ylab = "Tasa de Verdaderos Positivos")
+
+plot(roc_rf,
+     col = "#FF9800",
+     lwd = 2.5,
+     add = TRUE)
+
+abline(a = 0, b = 1, lty = 2, col = "gray50")
+
+legend("bottomright",
+       legend = c(
+         paste("Reg. Logística | AUC =", round(auc(roc_logistico), 3)),
+         paste("Random Forest  | AUC =", round(auc(roc_rf), 3))
+       ),
+       col = c("#1565C0", "#FF9800"),
+       lwd = 2.5,
+       bty = "n")
+```
+
+# 5. Tabla comparativa de modelos
+
+```{r tabla-comparativa}
+# Extraer métricas de ambos modelos
+tabla_comparativa <- data.frame(
+  Modelo       = c("Regresión Logística", "Random Forest"),
+  Accuracy     = c(
+    round(conf_log$overall["Accuracy"], 3),
+    round(conf_rf$overall["Accuracy"], 3)
+  ),
+  Sensitivity  = c(
+    round(conf_log$byClass["Sensitivity"], 3),
+    round(conf_rf$byClass["Sensitivity"], 3)
+  ),
+  Specificity  = c(
+    round(conf_log$byClass["Specificity"], 3),
+    round(conf_rf$byClass["Specificity"], 3)
+  ),
+  AUC          = c(
+    round(auc(roc_logistico), 3),
+    round(auc(roc_rf), 3)
+  )
+)
+
+knitr::kable(tabla_comparativa,
+             caption = "Comparación de métricas — ambos modelos evaluados en conjunto de prueba",
+             align   = "lcccc")
+```
+
+# 6. Interpretación para RRHH
+
+```{r interpretacion}
+# Variables más importantes según Random Forest
+top5 <- importancia$variable[1:5]
+cat("Top 5 predictores de rotación:\n")
+for (i in seq_along(top5)) cat(i, "-", top5[i], "\n")
+```
+
+## ¿Qué nos dicen los modelos?
+
+Ambos modelos coinciden en que las variables con **mayor poder predictivo de rotación** en este dataset son principalmente de naturaleza económica, de carga laboral y de desarrollo de carrera. En lenguaje de gestión de personas, esto se traduce en:
+
+- **Ingresos y compensación:** Los empleados con remuneraciones por debajo del mercado interno tienen mayor probabilidad de salida. Esto apunta a la necesidad de realizar estudios de equidad salarial periódicos.
+
+- **Horas extra (OverTime):** Es uno de los predictores más consistentes en ambos modelos. La sobrecarga sostenida actúa como detonante de la decisión de renuncia, especialmente combinada con baja satisfacción.
+
+- **Antigüedad y desarrollo:** Los primeros años en la organización concentran el mayor riesgo. Un programa de onboarding estructurado y seguimiento en los primeros 24 meses puede reducir significativamente la rotación temprana.
+
+- **Satisfacción laboral y con el ambiente:** Variables que el área de RRHH puede intervenir directamente mediante encuestas de clima, rediseño de espacios y programas de bienestar.
+
+**Implicación práctica:** Con un modelo como este, RRHH puede construir un *índice de riesgo de rotación* por empleado, permitiendo intervenciones preventivas focalizadas en lugar de reactivas.
+
+---
+
+```{r session-info}
+sessionInfo()
+```

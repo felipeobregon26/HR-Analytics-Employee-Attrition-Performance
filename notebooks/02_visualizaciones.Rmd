@@ -277,7 +277,7 @@ p1 <- df %>%
 p2 <- df %>%
   count(OverTime, Attrition) %>%
   group_by(OverTime) %>%
-  mutate(pct = n / sum(n) * 100) %>%
+  mutate(pct = n / sum(n) * 100) %>%u 
   filter(Attrition == "Yes") %>%
   ggplot(aes(x = OverTime, y = pct, fill = OverTime)) +
   geom_col(width = 0.5, show.legend = FALSE) +
