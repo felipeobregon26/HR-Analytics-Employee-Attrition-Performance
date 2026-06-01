@@ -224,6 +224,46 @@ ggsave("../outputs/plots/04_heatmap_satisfaccion.png",
        plot_heatmap, width = 10, height = 6, dpi = 150)
 ```
 
+## Nota interpretativa
+
+El heatmap revela un patrón consistente en las tres dimensiones 
+evaluadas: a menor nivel de satisfacción, mayor tasa de rotación 
+observada. Este gradiente es especialmente pronunciado en 
+satisfacción laboral y balance vida-trabajo, donde los niveles 
+"Bajo" concentran las tasas más altas de salida voluntaria.
+
+Desde la perspectiva del job embeddedness (Mitchell et al., 2001), 
+estas tres dimensiones operan como indicadores de fit organizacional 
+— la compatibilidad percibida entre el empleado y su entorno de 
+trabajo. Estudios posteriores han confirmado que el fit es la 
+dimensión del embeddedness más fuertemente asociada a la intención 
+de salida, por sobre los vínculos relacionales y el sacrificio 
+percibido (Jiang et al., 2012).
+
+Lo que el heatmap muestra empíricamente es consistente con ese 
+hallazgo: no es un único aspecto de la experiencia laboral el que 
+predice la rotación, sino la convergencia de múltiples señales de 
+desalineación. Un empleado con satisfacción laboral baja, ambiente 
+deteriorado y balance vida-trabajo comprometido acumula evidencia 
+suficiente para que la ruptura del contrato psicológico 
+(Rousseau, 1989) se vuelva irreversible.
+
+Referencias
+
+Jiang, K., Liu, D., McKay, P. F., Lee, T. W., y Mitchell, T. R. 
+(2012). When and how is job embeddedness predictive of turnover? 
+A meta-analytic investigation. Journal of Applied Psychology, 
+97(5), 1077–1096.
+
+Mitchell, T. R., Holtom, B. C., Lee, T. W., Sablynski, C. J., 
+y Erez, M. (2001). Why people stay: Using job embeddedness to 
+predict voluntary turnover. Academy of Management Journal, 
+44(6), 1102–1121.
+
+Rousseau, D. M. (1989). Psychological and implied contracts in 
+organizations. Employee Responsibilities and Rights Journal, 
+2(2), 121–139.
+
 # 5. Impacto de horas extra (OverTime) en la rotación
 
 ```{r viz-overtime}
