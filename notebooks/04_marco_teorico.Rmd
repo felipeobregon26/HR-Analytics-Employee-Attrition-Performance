@@ -1,0 +1,424 @@
+---
+title: "04 · Marco Teórico y Visualizaciones Clave"
+subtitle: "Rotación Laboral Voluntaria — Fundamentos y Evidencia Empírica"
+author: "Felipe Obregón Ochoa · Psicólogo"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    toc_depth: 3
+    theme: flatly
+    highlight: tango
+    code_folding: hide
+    number_sections: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  echo    = TRUE,
+  message = FALSE,
+  warning = FALSE,
+  fig.align = "center",
+  fig.width = 9,
+  fig.height = 6
+)
+```
+
+```{r paquetes, include=FALSE}
+library(tidyverse)
+library(patchwork)
+```
+
+```{r datos, include=FALSE}
+df <- readr::read_csv("../data/WA_Fn-UseC_-HR-Employee-Attrition.csv")
+
+df <- df %>%
+  select(-EmployeeCount, -Over18, -StandardHours, -EmployeeNumber)
+```
+
+---
+
+# Introducción
+
+La rotación laboral voluntaria constituye uno de los fenómenos más estudiados
+en psicología organizacional, y su relevancia no ha disminuido con el tiempo.
+En contextos de alta demanda de talento especializado como la minería chilena,
+donde se proyecta una necesidad de más de 34.000 nuevos trabajadores entre
+2023 y 2032 (Estudio de Fuerza Laboral de la Gran Minería Chilena, CCM-Eleva,
+2023), comprender por qué las personas deciden abandonar sus organizaciones
+es una pregunta con consecuencias estratégicas directas.
+
+Este notebook integra el marco teórico que fundamenta los patrones
+observados en el análisis exploratorio, junto con las visualizaciones
+más relevantes del dataset IBM HR Analytics. El objetivo es que el dato
+y la teoría conversen — no que coexistan en documentos separados.
+
+---
+
+# Marco Teórico — Rotación Laboral Voluntaria en Contexto Organizacional
+
+## Los modelos clásicos y sus limitaciones
+
+Los primeros modelos sistemáticos de rotación laboral adoptaron una lógica
+lineal: la insatisfacción laboral precedía la búsqueda de alternativas, y esta
+última antecedía la decisión de abandono (Mobley, 1977). Price y Mueller (1981)
+ampliaron este modelo incorporando variables estructurales como las oportunidades
+de promoción y los niveles salariales como antecedentes de la satisfacción.
+
+Sin embargo, estas aproximaciones explicaban entre un 5% y un 25% de la
+varianza observada en rotación voluntaria (Mitchell et al., 2001), lo que
+evidenciaba que el fenómeno respondía a una complejidad mayor. Un empleado
+puede estar satisfecho con su trabajo y aun así irse. Otro puede estar
+insatisfecho y quedarse. La linealidad del modelo resultaba insuficiente.
+
+## El Modelo de Despliegue y las trayectorias de salida
+
+Lee y Mitchell (1994) propusieron una reformulación radical del paradigma
+dominante. Su argumento central era que no existe una única trayectoria
+hacia la rotación, sino al menos cuatro vías diferenciadas según cómo
+cada persona procesa su decisión de salida.
+
+La primera y segunda vías involucran un evento disruptivo — lo que los
+autores llamaron shock — que activa una evaluación, con o sin comparación
+deliberada de alternativas. La tercera vía, conceptualmente central para
+este análisis, ocurre cuando una promesa implícita o explícita no es
+cumplida por la organización, generando una ruptura del contrato psicológico
+que moviliza la búsqueda activa de salida. La cuarta vía, en cambio, no
+requiere evento detonante: el empleado se va por inercia o desalineación
+acumulada, sin haber realizado comparación con alternativas.
+
+Este modelo es especialmente útil para interpretar los dos perfiles de
+rotación que emergen de los datos. El perfil de salida temprana, concentrado
+en los primeros tres años, es consistente con las vías dos y tres: empleados
+cuyas expectativas iniciales no son confirmadas por la realidad organizacional.
+El perfil de salida media, visible entre los cinco y siete años de antigüedad,
+se aproxima más a las vías uno y cuatro: un evento detonante específico — como
+la ausencia de una promoción esperada — o una desalineación gradual que
+eventualmente supera el umbral de tolerancia del empleado.
+
+## El efecto honeymoon-hangover
+
+Boswell, Boudreau y Tichy (2005) modelaron la evolución de la satisfacción
+laboral en trabajadores que cambian de empleo, identificando tres fases
+secuenciales. La primera, de deterioración, corresponde a la caída de
+satisfacción en el empleo anterior que precede la decisión de cambio.
+La segunda, el honeymoon, es el período de alta satisfacción inmediatamente
+posterior al ingreso. La tercera, el hangover, es el decline gradual de
+vuelta a la línea base o por debajo de ella.
+
+La profundidad de ese decline, según Boswell et al. (2009), depende
+significativamente del grado en que la realidad organizacional confirma
+o desmiente las expectativas iniciales. Cuando la brecha es amplia, el
+hangover es pronunciado y la probabilidad de salida aumenta de forma
+notable en los primeros veinticuatro meses.
+
+Este mecanismo adquiere especial relevancia en el contexto minero chileno
+actual. Las nuevas generaciones, y en particular la Generación Z, ya no
+evalúan una oferta laboral exclusivamente por el salario: buscan propósito,
+crecimiento visible, equilibrio vida-trabajo y coherencia entre los valores
+declarados por la organización y su experiencia cotidiana (Diario Usach, 2026;
+Buk, 2025). No por casualidad la permanencia promedio de un joven de la
+Generación Z en su primer trabajo alcanza apenas 1,1 años (Randstad, citado
+en Buk, 2025).
+
+## El arraigo laboral como contrapeso de la salida
+
+Frente a la pregunta de por qué las personas se van, Mitchell et al. (2001)
+propusieron la pregunta complementaria: por qué se quedan. Su respuesta fue
+el constructo de job embeddedness — arraigo laboral — definido como el conjunto
+de fuerzas que anclan al empleado en su posición actual, análogas a una red
+de conexiones que dificultan el movimiento.
+
+El arraigo se articula en tres dimensiones interdependientes. La primera,
+fit o compatibilidad, refiere al grado en que el empleado percibe que sus
+valores, metas y planes de carrera son compatibles con la cultura organizacional
+y el entorno comunitario. La segunda, links o vínculos, comprende las conexiones
+formales e informales entre el empleado y otras personas o instituciones dentro
+y fuera de la organización. La tercera, sacrifice o sacrificio, captura el costo
+percibido de los recursos materiales y psicológicos que se perderían al
+abandonar el puesto.
+
+Un metaanálisis con 65 muestras independientes y más de 42.000 participantes
+confirmó que el arraigo laboral predice la rotación voluntaria con mayor
+precisión que la satisfacción laboral, el compromiso organizacional y la
+disponibilidad de alternativas, considerados de forma aislada (Jiang et al.,
+2012). En el contexto minero de la II Región de Chile, la dimensión
+off-the-job del embeddedness — raíces familiares, redes comunitarias,
+arraigo territorial en Antofagasta — puede operar como factor de retención
+incluso cuando la satisfacción laboral es moderada (Mitchell et al., 2001).
+
+## La ruptura del contrato psicológico
+
+Rousseau (1989) introdujo el concepto de contrato psicológico para referirse
+al conjunto de creencias individuales sobre las obligaciones mutuas implícitas
+en la relación laboral. Su incumplimiento — lo que Morrison y Robinson (1997)
+distinguen como breach, percepción cognitiva de incumplimiento, y violation,
+respuesta emocional intensa ante ese incumplimiento — tiene consecuencias
+documentadas sobre la confianza, el compromiso y la intención de permanecer.
+
+El proceso típico que sigue a una ruptura percibida no es inmediato.
+Generalmente el empleado atraviesa un período de observación y espera,
+seguido de un deterioro progresivo del compromiso, la activación de búsqueda
+de alternativas y, finalmente, la salida voluntaria (Morrison y Robinson, 1997).
+Este proceso temporal explica el perfil de rotación media identificado en los
+datos: empleados con cinco a siete años de antigüedad que no abandonaron en
+los primeros años pero que eventualmente se fueron cuando la evidencia acumulada
+de incumplimiento resultó insostenible.
+
+## El agotamiento emocional como mecanismo de salida
+
+El análisis de la variable OverTime — que en el dataset triplica la probabilidad
+de rotación — requiere un marco explicativo adicional. Maslach y Leiter (1997)
+identificaron el agotamiento emocional como el componente central del burnout
+organizacional: la sensación de estar sobre-exigido y vaciado de recursos
+emocionales y físicos, sin capacidad de reposición.
+
+Cuando la demanda de tiempo supera de forma sistemática los recursos disponibles
+del trabajador, la salida voluntaria emerge como la respuesta más accesible para
+recuperar el control sobre el propio bienestar. En el contexto de la minería
+chilena, donde los turnos prolongados y la lejanía del hogar son condiciones
+estructurales del trabajo en faena, este mecanismo no puede ignorarse en ningún
+modelo de retención (CCM-Eleva, 2023).
+
+---
+
+# Visualizaciones clave — evidencia empírica del marco teórico
+
+> **Nota metodológica:** Las visualizaciones a continuación muestran
+> asociaciones estadísticas, no relaciones causales. Su interpretación
+> se fundamenta en los marcos teóricos desarrollados en la sección anterior.
+
+## Perfil de rotación por antigüedad — el hangover en los datos
+
+```{r plot-antiguedad}
+plot_anios <- df %>%
+  mutate(tramo_anios = cut(YearsAtCompany,
+                           breaks = c(-Inf, 1, 3, 5, 10, 20, Inf),
+                           labels = c("0-1", "2-3", "4-5", "6-10", "11-20", "21+"))) %>%
+  count(tramo_anios, Attrition) %>%
+  group_by(tramo_anios) %>%
+  mutate(tasa = n / sum(n) * 100) %>%
+  filter(Attrition == "Yes") %>%
+  ggplot(aes(x = tramo_anios, y = tasa)) +
+  geom_line(color = "#1565C0", linewidth = 1.2, group = 1) +
+  geom_point(aes(size = tasa), color = "#FF9800", show.legend = FALSE) +
+  geom_text(aes(label = paste0(round(tasa, 1), "%")),
+            vjust = -1.2, size = 4) +
+  scale_y_continuous(limits = c(0, 50)) +
+  theme_minimal(base_size = 13) +
+  labs(
+    title    = "Tasa de Rotación según Antigüedad en la Empresa",
+    subtitle = "El riesgo es máximo en los primeros años — patrón consistente con el efecto honeymoon-hangover",
+    x        = "Años en la empresa",
+    y        = "Tasa de rotación (%)",
+    caption  = "Fuente: IBM HR Analytics Dataset"
+  )
+
+plot_anios
+```
+
+La curva de antigüedad muestra el patrón descrito por Boswell et al. (2005):
+una concentración de rotación en los primeros años que decrece progresivamente
+a medida que el arraigo organizacional se consolida. El leve repunte en el
+tramo de 21+ años merece cautela interpretativa dado el tamaño reducido de
+ese segmento, aunque podría reflejar un segundo momento de vulnerabilidad
+asociado a barreras de desarrollo tardío o cambios en las expectativas de
+carrera.
+
+## Horas extra y agotamiento — el predictor más potente
+
+```{r plot-overtime}
+plot_overtime <- df %>%
+  count(OverTime, Attrition) %>%
+  group_by(OverTime) %>%
+  mutate(tasa = n / sum(n) * 100) %>%
+  filter(Attrition == "Yes") %>%
+  ggplot(aes(x = OverTime, y = tasa, fill = OverTime)) +
+  geom_col(width = 0.5, show.legend = FALSE) +
+  geom_text(aes(label = paste0(round(tasa, 1), "%")),
+            vjust = -0.5, size = 6, fontface = "bold") +
+  scale_fill_manual(values = c("No" = "#2196F3", "Yes" = "#FF9800")) +
+  scale_y_continuous(limits = c(0, 50)) +
+  theme_minimal(base_size = 14) +
+  labs(
+    title    = "Rotación según Horas Extra (OverTime)",
+    subtitle = "Quienes hacen horas extra tienen más del doble de probabilidad de irse",
+    x        = "¿Realiza horas extra?",
+    y        = "Tasa de rotación (%)",
+    caption  = "Fuente: IBM HR Analytics Dataset"
+  )
+
+plot_overtime
+```
+
+La diferencia entre 10.4% y 30.5% es el hallazgo de mayor consistencia en
+todo el análisis exploratorio. Es coherente con la literatura sobre agotamiento
+emocional (Maslach y Leiter, 1997): la sobrecarga sostenida vacía los recursos
+del trabajador hasta hacer de la salida la respuesta más razonable disponible.
+
+## Distribución del ingreso — equidad percibida y sacrificio
+
+```{r plot-ingreso}
+plot_ingreso <- df %>%
+  ggplot(aes(x = Attrition, y = MonthlyIncome, fill = Attrition)) +
+  geom_violin(alpha = 0.4, trim = FALSE) +
+  geom_boxplot(width = 0.15, alpha = 0.8,
+               outlier.shape = 21, outlier.size = 2) +
+  scale_fill_manual(values = c("No" = "#2196F3", "Yes" = "#FF9800")) +
+  scale_y_continuous(labels = scales::dollar_format(prefix = "USD ")) +
+  theme_minimal(base_size = 13) +
+  theme(legend.position = "none") +
+  labs(
+    title    = "Distribución del Ingreso Mensual según Rotación",
+    subtitle = "Los empleados que se van tienen ingresos consistentemente menores",
+    x        = "Rotación",
+    y        = "Ingreso Mensual (USD)",
+    caption  = "Fuente: IBM HR Analytics Dataset"
+  )
+
+plot_ingreso
+```
+
+La distribución del ingreso no es homogénea dentro del grupo que se fue.
+Al observar la forma del violín en el grupo "Yes", es posible identificar
+al menos dos concentraciones de densidad, lo que sugiere que no existe un
+único perfil salarial asociado a la salida voluntaria. Esta heterogeneidad
+es consistente con lo que la literatura describe como dos momentos críticos
+en la trayectoria laboral.
+
+El primero ocurre en los años iniciales, cuando la satisfacción declina desde
+su punto más alto hacia un nivel de equilibrio inferior — fenómeno conocido
+como el efecto honeymoon-hangover (Boswell et al., 2005). Durante esta fase,
+la brecha entre las expectativas de ingreso y la compensación real puede actuar
+como detonante de la decisión de salida, especialmente cuando el empleado
+percibe que la organización no ha cumplido las promesas implícitas asociadas
+al proceso de incorporación (Rousseau, 1989).
+
+El segundo momento aparece más avanzada la trayectoria, cuando empleados con
+mayor antigüedad enfrentan barreras de desarrollo que limitan su progresión
+salarial y profesional. Este patrón es coherente con la noción de ruptura del
+contrato psicológico en su dimensión de desarrollo de carrera (Morrison y
+Robinson, 1997).
+
+Adicionalmente, el desplazamiento sistemático de la nube naranja hacia la
+zona de menor ingreso relativo para cada edad es consistente con la teoría
+de la equidad de Adams (1965): lo que moviliza la salida no es necesariamente
+el salario absoluto, sino la percepción de que la compensación no refleja
+la contribución real del empleado. En términos de arraigo laboral, esta
+inequidad percibida erosiona directamente la dimensión de sacrifice — el
+costo percibido de irse disminuye cuando el trabajador siente que no tiene
+mucho que perder (Mitchell et al., 2001).
+
+Los intervalos de confianza al 95%, representados por las bandas sombreadas
+alrededor de las líneas de tendencia, muestran mayor amplitud en el grupo
+que rotó — especialmente en los extremos de edad. Esto refleja mayor
+incertidumbre en la estimación donde los datos son más escasos, y sugiere
+cautela adicional al interpretar el perfil de rotación en empleados muy
+jóvenes o de mayor edad.
+
+## Satisfacción laboral — el fit como ancla
+
+```{r plot-satisfaccion}
+plot_satisfaccion <- df %>%
+  mutate(Attrition_num = ifelse(Attrition == "Yes", 1, 0)) %>%
+  group_by(JobSatisfaction) %>%
+  summarise(tasa = mean(Attrition_num) * 100) %>%
+  ggplot(aes(x = factor(JobSatisfaction), y = tasa, fill = tasa)) +
+  geom_col(show.legend = FALSE) +
+  geom_text(aes(label = paste0(round(tasa, 1), "%")),
+            vjust = -0.4, size = 4.5) +
+  scale_fill_gradient(low = "#90CAF9", high = "#1565C0") +
+  scale_y_continuous(limits = c(0, 25)) +
+  scale_x_discrete(labels = c("1" = "Bajo", "2" = "Medio",
+                               "3" = "Alto", "4" = "Muy Alto")) +
+  theme_minimal(base_size = 13) +
+  labs(
+    title    = "Tasa de Rotación por Nivel de Satisfacción Laboral",
+    subtitle = "A menor satisfacción, mayor probabilidad de salida",
+    x        = "Nivel de satisfacción",
+    y        = "Tasa de rotación (%)",
+    caption  = "Fuente: IBM HR Analytics Dataset"
+  )
+
+plot_satisfaccion
+```
+
+La satisfacción laboral opera como indicador del fit organizacional — la
+compatibilidad percibida entre el empleado y su entorno de trabajo (Mitchell
+et al., 2001). El gradiente visible en el gráfico es consistente con el
+metaanálisis de Jiang et al. (2012): cuando el fit se deteriora, el arraigo
+disminuye y la probabilidad de salida aumenta. La intervención preventiva
+no debería esperar a que la satisfacción llegue a niveles críticos — debería
+monitorearla como señal temprana de deterioro del vínculo organizacional.
+
+---
+
+# Síntesis — dos perfiles, dos intervenciones
+
+Los marcos teóricos revisados y la evidencia empírica del dataset convergen
+en una misma conclusión: la rotación en esta organización no responde a un
+perfil único, sino a al menos dos momentos críticos diferenciados en la
+trayectoria laboral.
+
+El primero, asociado a los años iniciales, está explicado principalmente
+por el efecto honeymoon-hangover y la ruptura temprana del contrato
+psicológico — cuando las expectativas de ingreso y desarrollo no son
+confirmadas por la realidad organizacional. El segundo, visible en el
+tramo de cinco a siete años, refleja un deterioro acumulado del arraigo
+organizacional, frecuentemente asociado a barreras de crecimiento que
+erosionan la dimensión de sacrifice del job embeddedness.
+
+Ambos perfiles son prevenibles con intervenciones focalizadas y oportunas,
+cuya efectividad se evalúa en el notebook 03 mediante modelado predictivo.
+
+---
+
+# Referencias
+
+Adams, J. S. (1965). Inequity in social exchange. En L. Berkowitz (Ed.),
+*Advances in experimental social psychology* (Vol. 2, pp. 267–299).
+Academic Press.
+
+Boswell, W. R., Boudreau, J. W., y Tichy, J. (2005). The relationship
+between employee job change and job satisfaction: The honeymoon-hangover
+effect. *Journal of Applied Psychology, 90*(5), 882–892.
+
+Boswell, W. R., Shipp, A. J., Payne, S. C., y Culbertson, S. S. (2009).
+Changes in newcomer job satisfaction over time: Examining the pattern of
+honeymoons and hangovers. *Journal of Applied Psychology, 94*(4), 844–858.
+
+CCM-Eleva. (2023). *Estudio de Fuerza Laboral de la Gran Minería Chilena
+2023–2032*. Consejo Minero de Chile.
+
+Jiang, K., Liu, D., McKay, P. F., Lee, T. W., y Mitchell, T. R. (2012).
+When and how is job embeddedness predictive of turnover? A meta-analytic
+investigation. *Journal of Applied Psychology, 97*(5), 1077–1096.
+
+Lee, T. W., y Mitchell, T. R. (1994). An alternative approach: The unfolding
+model of voluntary employee turnover. *Academy of Management Review, 19*(1),
+51–89.
+
+Leiter, M. P., y Maslach, C. (2004). Areas of worklife: A structured approach
+to organizational predictors of job burnout. *Research in Occupational Stress
+and Well Being, 3*, 91–134.
+
+Maslach, C., y Leiter, M. P. (1997). *The truth about burnout: How
+organizations cause personal stress and what to do about it*. Jossey-Bass.
+
+Mitchell, T. R., Holtom, B. C., Lee, T. W., Sablynski, C. J., y Erez, M.
+(2001). Why people stay: Using job embeddedness to predict voluntary turnover.
+*Academy of Management Journal, 44*(6), 1102–1121.
+
+Mobley, W. H. (1977). Intermediate linkages in the relationship between job
+satisfaction and employee turnover. *Journal of Applied Psychology, 62*(2),
+237–240.
+
+Morrison, E. W., y Robinson, S. L. (1997). When employees feel betrayed:
+A model of how psychological contract violation develops. *Academy of
+Management Review, 22*(1), 226–256.
+
+Price, J. L., y Mueller, C. W. (1981). *Professional turnover*. Luce.
+
+Rousseau, D. M. (1989). Psychological and implied contracts in organizations.
+*Employee Responsibilities and Rights Journal, 2*(2), 121–139.
