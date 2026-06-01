@@ -135,6 +135,50 @@ ggsave("../outputs/plots/03_ingreso_por_attrition.png",
        plot_ingreso, width = 8, height = 6, dpi = 150)
 ```
 
+## Nota interpretativa
+
+La distribución del ingreso mensual según rotación no es homogénea 
+dentro del grupo que se fue. Al observar la forma del violín en el 
+grupo "Yes", es posible identificar al menos dos concentraciones de 
+densidad, lo que sugiere que no existe un único perfil salarial 
+asociado a la salida voluntaria.
+
+Esta heterogeneidad es consistente con lo que la literatura describe 
+como dos momentos críticos en la trayectoria laboral. El primero 
+ocurre en los años iniciales, cuando la satisfacción experimentada 
+en el nuevo empleo comienza a declinar desde su punto más alto hacia 
+un nivel de equilibrio inferior — fenómeno conocido como el efecto 
+honeymoon-hangover (Boswell et al., 2005). Durante esta fase, la 
+brecha entre las expectativas de ingreso y la compensación real puede 
+actuar como detonante de la decisión de salida, especialmente cuando 
+el empleado percibe que la organización no ha cumplido las promesas 
+implícitas asociadas al proceso de incorporación (Rousseau, 1989).
+
+El segundo momento aparece más avanzada la trayectoria, cuando 
+empleados con mayor antigüedad y experiencia acumulada enfrentan 
+barreras de desarrollo que limitan su progresión salarial y 
+profesional. Este patrón es coherente con la noción de ruptura del 
+contrato psicológico en su dimensión de desarrollo de carrera 
+(Morrison y Robinson, 1997), donde la ausencia de oportunidades 
+concretas de crecimiento erosiona el vínculo con la organización 
+hasta que la salida se vuelve la respuesta más razonable.
+
+Ambos momentos son prevenibles con intervenciones diferenciadas y 
+oportunas, tal como se desarrolla en el notebook 03.
+
+Referencias
+
+Boswell, W. R., Boudreau, J. W., y Tichy, J. (2005). The relationship 
+between employee job change and job satisfaction: The honeymoon-hangover 
+effect. Journal of Applied Psychology, 90(5), 882–892.
+
+Morrison, E. W., y Robinson, S. L. (1997). When employees feel betrayed: 
+A model of how psychological contract violation develops. Academy of 
+Management Review, 22(1), 226–256.
+
+Rousseau, D. M. (1989). Psychological and implied contracts in 
+organizations. Employee Responsibilities and Rights Journal, 2(2), 121–139.
+
 # 4. Heatmap de satisfacción laboral × rotación
 
 ```{r viz-heatmap}
