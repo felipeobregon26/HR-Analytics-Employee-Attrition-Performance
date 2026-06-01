@@ -1683,6 +1683,15 @@ Attrition</h1>
 <span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>EmployeeCount, <span class="sc">-</span>Over18, <span class="sc">-</span>StandardHours, <span class="sc">-</span>EmployeeNumber)</span></code></pre></div>
 <div id="tasa-de-rotación-por-departamento" class="section level1">
 <h1>1. Tasa de rotación por Departamento</h1>
+<p><strong>Nota metodológica:</strong> Los gráficos a continuación
+muestran frecuencias y tasas de rotación por segmento organizacional.
+Las diferencias observadas entre grupos representan <strong>asociaciones
+estadísticas</strong>, no relaciones causales. Que un departamento o
+cargo presente una tasa de rotación más alta no implica que esa variable
+<em>cause</em> la salida — pueden existir factores confusores no medidos
+en este dataset. La confirmación de relaciones causales requiere diseños
+de investigación adicionales y se aborda parcialmente en el notebook 03
+mediante modelado predictivo.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>plot_dept <span class="ot">&lt;-</span> df <span class="sc">%&gt;%</span></span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="fu">count</span>(Department, Attrition) <span class="sc">%&gt;%</span></span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="fu">group_by</span>(Department) <span class="sc">%&gt;%</span></span>

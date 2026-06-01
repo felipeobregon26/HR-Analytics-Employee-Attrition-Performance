@@ -37,6 +37,16 @@ df <- df %>%
 
 # 1. Tasa de rotación por Departamento
 
+**Nota metodológica:** Los gráficos a continuación muestran 
+frecuencias y tasas de rotación por segmento organizacional. 
+Las diferencias observadas entre grupos representan **asociaciones 
+estadísticas**, no relaciones causales. Que un departamento o cargo 
+presente una tasa de rotación más alta no implica que esa variable 
+*cause* la salida — pueden existir factores confusores no medidos 
+en este dataset. La confirmación de relaciones causales requiere 
+diseños de investigación adicionales y se aborda parcialmente en el 
+notebook 03 mediante modelado predictivo.
+
 ```{r viz-departamento}
 plot_dept <- df %>%
   count(Department, Attrition) %>%
@@ -97,6 +107,7 @@ plot_jobrole
 ggsave("../outputs/plots/02_rotacion_por_cargo.png",
        plot_jobrole, width = 10, height = 6, dpi = 150)
 ```
+
 
 # 3. Distribución de ingreso mensual por Attrition (violin + boxplot)
 
