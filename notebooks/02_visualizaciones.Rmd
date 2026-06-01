@@ -166,18 +166,6 @@ hasta que la salida se vuelve la respuesta más razonable.
 Ambos momentos son prevenibles con intervenciones diferenciadas y 
 oportunas, tal como se desarrolla en el notebook 03.
 
-Referencias
-
-Boswell, W. R., Boudreau, J. W., y Tichy, J. (2005). The relationship 
-between employee job change and job satisfaction: The honeymoon-hangover 
-effect. Journal of Applied Psychology, 90(5), 882–892.
-
-Morrison, E. W., y Robinson, S. L. (1997). When employees feel betrayed: 
-A model of how psychological contract violation develops. Academy of 
-Management Review, 22(1), 226–256.
-
-Rousseau, D. M. (1989). Psychological and implied contracts in 
-organizations. Employee Responsibilities and Rights Journal, 2(2), 121–139.
 
 # 4. Heatmap de satisfacción laboral × rotación
 
@@ -248,21 +236,6 @@ deteriorado y balance vida-trabajo comprometido acumula evidencia
 suficiente para que la ruptura del contrato psicológico 
 (Rousseau, 1989) se vuelva irreversible.
 
-Referencias
-
-Jiang, K., Liu, D., McKay, P. F., Lee, T. W., y Mitchell, T. R. 
-(2012). When and how is job embeddedness predictive of turnover? 
-A meta-analytic investigation. Journal of Applied Psychology, 
-97(5), 1077–1096.
-
-Mitchell, T. R., Holtom, B. C., Lee, T. W., Sablynski, C. J., 
-y Erez, M. (2001). Why people stay: Using job embeddedness to 
-predict voluntary turnover. Academy of Management Journal, 
-44(6), 1102–1121.
-
-Rousseau, D. M. (1989). Psychological and implied contracts in 
-organizations. Employee Responsibilities and Rights Journal, 
-2(2), 121–139.
 
 # 5. Impacto de horas extra (OverTime) en la rotación
 
@@ -356,15 +329,6 @@ vulnerabilidad asociado a cambios en las condiciones laborales
 o en las expectativas de retiro, aunque su interpretación requiere 
 cautela dado el tamaño reducido de ese segmento en el dataset.
 
-Referencias
-
-Boswell, W. R., Boudreau, J. W., y Tichy, J. (2005). The relationship 
-between employee job change and job satisfaction: The honeymoon-hangover 
-effect. Journal of Applied Psychology, 90(5), 882–892.
-
-Maslach, C., y Leiter, M. P. (1997). The truth about burnout: How 
-organizations cause personal stress and what to do about it. 
-Jossey-Bass.
 
 
 # 7. Edad vs ingreso mensual, coloreado por Attrition
@@ -392,6 +356,38 @@ plot_scatter
 ggsave("../outputs/plots/07_edad_ingreso_attrition.png",
        plot_scatter, width = 10, height = 6, dpi = 150)
 ```
+
+## Nota interpretativa
+
+El gráfico de dispersión muestra la relación entre edad e ingreso 
+mensual diferenciada por grupo de rotación. Ambos grupos presentan 
+una asociación positiva entre ambas variables — a mayor edad, mayor 
+ingreso — lo cual es esperable dado que la antigüedad y la 
+experiencia acumulada tienden a traducirse en mayor compensación 
+a lo largo de la trayectoria laboral.
+
+Las líneas de tendencia incluyen intervalos de confianza al 95% 
+representados por las bandas sombreadas. Su amplitud no es 
+uniforme entre grupos: la banda del grupo que no rotó es 
+notoriamente más angosta, lo que indica una estimación más precisa 
+de la tendencia dado el mayor número de casos disponibles. La banda 
+del grupo que sí rotó es más ancha — especialmente en los extremos 
+de edad — reflejando mayor incertidumbre donde los datos son más 
+escasos. Esta asimetría es en sí misma un hallazgo metodológico: 
+las conclusiones sobre el perfil de rotación en empleados jóvenes 
+o de mayor edad deben interpretarse con cautela adicional.
+
+Lo relevante para el análisis de retención no es la pendiente sino 
+el desplazamiento entre nubes: los empleados que se fueron se 
+concentran sistemáticamente en la zona de menor ingreso relativo 
+para su edad. Esto sugiere que la rotación no responde únicamente 
+al nivel salarial absoluto, sino a una percepción de inequidad — 
+la brecha entre lo que el empleado recibe y lo que considera 
+proporcional a su experiencia y aporte (Adams, 1965). En términos 
+de job embeddedness, esta percepción erosiona directamente la 
+dimensión de sacrifice — el costo percibido de irse disminuye 
+cuando el empleado siente que su compensación no refleja su 
+contribución real (Mitchell et al., 2001).
 
 # 8. Dashboard — 4 métricas clave
 
@@ -474,10 +470,60 @@ ggsave("../outputs/plots/08_dashboard_metricas.png",
        dashboard, width = 12, height = 10, dpi = 150)
 ```
 
+## Síntesis visual — Dashboard de factores clave
+
+El dashboard integra los cuatro hallazgos con mayor relevancia 
+para la intervención organizacional. La tasa global de rotación 
+del 16.1% establece la magnitud del problema. Las horas extra 
+emergen como el factor de riesgo más potente — triplicando la 
+probabilidad de salida — lo que es consistente con la literatura 
+sobre agotamiento emocional como antecedente de la rotación 
+voluntaria (Maslach y Leiter, 1997). La distribución por 
+departamento señala focos de intervención prioritaria, mientras 
+que la satisfacción laboral opera como indicador temprano de 
+deterioro del fit organizacional (Mitchell et al., 2001).
+
+La lectura conjunta de estos cuatro indicadores permite pasar 
+de un diagnóstico descriptivo a una agenda de intervención 
+concreta — que se desarrolla en el notebook 03 mediante 
+modelado predictivo.
+
 **Nota metodológica:** 
 Variables como `JobSatisfaction`, `EnvironmentSatisfaction` y `WorkLifeBalance` son escalas ordinales (Likert de 4 puntos). Para efectos del modelado predictivo se tratan
 como numéricas asumiendo escala intervalar — decisión documentada
 como limitación psicométrica en el notebook 03.
+
+## Referencias
+
+Adams, J. S. (1965). Inequity in social exchange. En L. Berkowitz 
+(Ed.), Advances in experimental social psychology (Vol. 2, 
+pp. 267–299). Academic Press.
+
+Boswell, W. R., Boudreau, J. W., y Tichy, J. (2005). The relationship 
+between employee job change and job satisfaction: The honeymoon-hangover 
+effect. Journal of Applied Psychology, 90(5), 882–892.
+
+Jiang, K., Liu, D., McKay, P. F., Lee, T. W., y Mitchell, T. R. 
+(2012). When and how is job embeddedness predictive of turnover? 
+A meta-analytic investigation. Journal of Applied Psychology, 
+97(5), 1077–1096.
+
+Maslach, C., y Leiter, M. P. (1997). The truth about burnout: How 
+organizations cause personal stress and what to do about it. 
+Jossey-Bass.
+
+Mitchell, T. R., Holtom, B. C., Lee, T. W., Sablynski, C. J., 
+y Erez, M. (2001). Why people stay: Using job embeddedness to 
+predict voluntary turnover. Academy of Management Journal, 
+44(6), 1102–1121.
+
+Morrison, E. W., y Robinson, S. L. (1997). When employees feel 
+betrayed: A model of how psychological contract violation develops. 
+Academy of Management Review, 22(1), 226–256.
+
+Rousseau, D. M. (1989). Psychological and implied contracts in 
+organizations. Employee Responsibilities and Rights Journal, 
+2(2), 121–139.
 
 ```{r session-info}
 sessionInfo()
