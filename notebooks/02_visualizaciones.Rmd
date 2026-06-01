@@ -326,6 +326,47 @@ ggsave("../outputs/plots/06_rotacion_por_antiguedad.png",
        plot_anios, width = 10, height = 6, dpi = 150)
 ```
 
+
+## Nota interpretativa
+
+Los dos gráficos anteriores concentran los hallazgos más relevantes 
+del análisis exploratorio. El primero muestra que realizar horas extra 
+casi triplica la probabilidad de salida voluntaria — 30.5% versus 
+10.4% en quienes no las realizan. El segundo confirma el patrón 
+multimodal que se anticipó en el análisis de distribuciones: la 
+rotación es máxima en los primeros años de antigüedad y desciende 
+progresivamente, con un leve repunte pasados los 21 años.
+
+Ambos patrones son coherentes con lo que la literatura describe. 
+En el caso de las horas extra, la relación con la rotación ha sido 
+documentada consistentemente como mediada por el agotamiento 
+emocional — lo que Maslach y Leiter (1997) identificaron como el 
+componente central del burnout organizacional. Cuando la demanda 
+sostenida de tiempo supera los recursos disponibles del trabajador, 
+la salida voluntaria emerge como la respuesta más accesible para 
+recuperar el control sobre el propio tiempo y bienestar.
+
+La curva de antigüedad, por su parte, es consistente con el efecto 
+honeymoon-hangover descrito por Boswell et al. (2005): la caída 
+brusca entre el primer y el tercer año refleja el período en que 
+las expectativas iniciales colisionan con la experiencia 
+organizacional real. El repunte observado después de los 21 años 
+merece atención — podría indicar un segundo momento de 
+vulnerabilidad asociado a cambios en las condiciones laborales 
+o en las expectativas de retiro, aunque su interpretación requiere 
+cautela dado el tamaño reducido de ese segmento en el dataset.
+
+Referencias
+
+Boswell, W. R., Boudreau, J. W., y Tichy, J. (2005). The relationship 
+between employee job change and job satisfaction: The honeymoon-hangover 
+effect. Journal of Applied Psychology, 90(5), 882–892.
+
+Maslach, C., y Leiter, M. P. (1997). The truth about burnout: How 
+organizations cause personal stress and what to do about it. 
+Jossey-Bass.
+
+
 # 7. Edad vs ingreso mensual, coloreado por Attrition
 
 ```{r viz-scatter}
