@@ -9,9 +9,9 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Felipe Obregón Ochoa | Psicólogo UCN" />
+<meta name="author" content="Felipe Obregón Ochoa | Psicólogo" />
 
-<meta name="date" content="2026-05-29" />
+<meta name="date" content="2026-05-31" />
 
 <title>Análisis Exploratorio — IBM HR Analytics Employee Attrition</title>
 
@@ -1668,8 +1668,8 @@ border-radius: 0px;
 
 <h1 class="title toc-ignore">Análisis Exploratorio — IBM HR Analytics
 Employee Attrition</h1>
-<h4 class="author">Felipe Obregón Ochoa | Psicólogo UCN</h4>
-<h4 class="date">2026-05-29</h4>
+<h4 class="author">Felipe Obregón Ochoa | Psicólogo</h4>
+<h4 class="date">2026-05-31</h4>
 
 </div>
 
@@ -1833,6 +1833,13 @@ Employee Attrition</h1>
 <span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a></span>
 <span id="cb14-5"><a href="#cb14-5" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Dataset limpio:&quot;</span>, <span class="fu">nrow</span>(df), <span class="st">&quot;filas y&quot;</span>, <span class="fu">ncol</span>(df), <span class="st">&quot;columnas</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
 <pre><code>## Dataset limpio: 1470 filas y 31 columnas</code></pre>
+<p><strong>Decisión metodológica:</strong> Se eliminan tres variables de
+varianza cero (<code>EmployeeCount</code>, <code>Over18</code>,
+<code>StandardHours</code>) por no aportar poder discriminatorio al
+modelo. La variable <code>Gender</code> — aunque constante en este
+dataset — se reporta como hallazgo organizacional en la sección de
+limitaciones: un dataset sin diversidad de género restringe la
+generalización de resultados.</p>
 </div>
 <div id="valores-faltantes" class="section level1">
 <h1>4. Valores faltantes</h1>
@@ -2041,20 +2048,101 @@ Employee Attrition</h1>
 ##   &lt;chr&gt;             &lt;dbl&gt;      &lt;dbl&gt;         &lt;dbl&gt;
 ## 1 No                 6833       37.6           7.4
 ## 2 Yes                4787       33.6           5.1</code></pre>
-<p><strong>Interpretación para RRHH:</strong></p>
-<p>Este análisis exploratorio revela que la tasa de rotación en el
-dataset es de aproximadamente <strong>16%</strong>, lo cual está por
-encima del promedio industrial recomendado (10-12%). Los primeros
-hallazgos sugieren que:</p>
-<ul>
-<li>Los empleados que se van tienen <strong>menores ingresos
-mensuales</strong> en promedio</li>
-<li>La rotación no es homogénea entre departamentos ni roles</li>
-<li>Variables como horas extra (<em>OverTime</em>) y satisfacción
-laboral aparecen como posibles factores clave</li>
-</ul>
-<p>Estos patrones serán explorados en profundidad en los notebooks de
-visualización y modelado predictivo.</p>
+</div>
+<div id="interpretación-perfil-de-empleado-en-riesgo-de-rotación" class="section level1">
+<h1>Interpretación — Perfil de Empleado en Riesgo de Rotación</h1>
+<blockquote>
+<p><strong>Nota metodológica:</strong> Los hallazgos descritos a
+continuación corresponden a análisis descriptivo y exploratorio. Las
+asociaciones identificadas no implican causalidad — su confirmación
+estadística se desarrolla en el notebook 03 (modelo predictivo).</p>
+</blockquote>
+<hr />
+<div id="hallazgos-cuantitativos-base" class="section level2">
+<h2>Hallazgos cuantitativos base</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Variable</th>
+<th>No rota</th>
+<th>Sí rota</th>
+<th>Diferencia</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Ingreso mensual promedio</td>
+<td>$6.833</td>
+<td>$4.787</td>
+<td><strong>-$2.046 (-30%)</strong></td>
+</tr>
+<tr class="even">
+<td>Edad promedio</td>
+<td>37.6 años</td>
+<td>33.6 años</td>
+<td><strong>-4 años</strong></td>
+</tr>
+<tr class="odd">
+<td>Antigüedad promedio</td>
+<td>7.4 años</td>
+<td>5.1 años</td>
+<td><strong>-2.3 años</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+</div>
+<div id="perfil-1-rotación-temprana-años-1-3" class="section level2">
+<h2>Perfil 1 — Rotación temprana (años 1-3)</h2>
+<p>El segmento con mayor concentración de rotación corresponde a
+empleados jóvenes con menor compensación económica. La brecha salarial
+de un 30% respecto a quienes permanecen sugiere que la organización no
+logra sostener la percepción de equidad interna durante el período de
+integración inicial.</p>
+<p>Este patrón es consistente con literatura organizacional sobre el
+<strong>período de luna de miel</strong> — una fase de alta motivación y
+expectativa que, de no ser reforzada con señales concretas de desarrollo
+y reconocimiento, tiende a erosionarse en los primeros 24-36 meses.</p>
+<p><strong>Implicancia para intervención:</strong> Extender y sostener
+activamente ese período mediante acompañamiento estructurado en los
+primeros dos años — onboarding prolongado, mentorías, revisiones
+salariales tempranas y planes de carrera visibles desde el ingreso.</p>
+<hr />
+</div>
+<div id="perfil-2-rotación-media-años-5-7" class="section level2">
+<h2>Perfil 2 — Rotación media (años 5-7)</h2>
+<p>La distribución de <code>YearsAtCompany</code> muestra un patrón
+multimodal con un segundo peak de rotación entre los 5 y 7 años de
+antigüedad. Este segmento no corresponde a empleados nuevos — han
+invertido tiempo considerable en la organización y conocen su
+funcionamiento.</p>
+<p>La hipótesis más plausible es la presencia de <strong>barreras de
+desarrollo profesional</strong> — momentos donde el crecimiento se
+estanca, la compensación no avanza al ritmo esperado o las oportunidades
+de ascenso son percibidas como limitadas o inequitativas. En contextos
+de alta demanda laboral especializada — como la minería en la II Región
+— este perfil representa un riesgo especialmente crítico dado el costo
+de reposición.</p>
+<p><strong>Implicancia para intervención:</strong> Revisión de
+estructuras de carrera y bandas salariales en el tramo de 5-8 años de
+antigüedad. Identificación proactiva de empleados en ese rango mediante
+entrevistas de permanencia (<em>stay interviews</em>) antes de que la
+decisión de salida esté tomada.</p>
+<hr />
+</div>
+<div id="síntesis-ejecutiva" class="section level2">
+<h2>Síntesis ejecutiva</h2>
+<blockquote>
+<p>El análisis sugiere que la rotación en esta organización no responde
+a un perfil único, sino a <strong>dos momentos críticos
+diferenciados</strong> en la trayectoria laboral: uno asociado a la
+consolidación del vínculo inicial y otro a barreras de desarrollo en la
+etapa intermedia. Ambos son prevenibles con intervenciones focalizadas y
+oportunas.</p>
+</blockquote>
+<hr />
+<p><em>Basado en análisis exploratorio del IBM HR Analytics
+Dataset</em></p>
 <hr />
 <div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" tabindex="-1"></a><span class="co"># Información de sesión para reproducibilidad</span></span>
 <span id="cb35-2"><a href="#cb35-2" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div>
@@ -2095,6 +2183,7 @@ visualización y modelado predictivo.</p>
 ## [37] glue_1.8.0         visdat_0.6.0       xfun_0.56          tidyselect_1.2.1  
 ## [41] rstudioapi_0.18.0  knitr_1.51         farver_2.1.2       htmltools_0.5.9   
 ## [45] labeling_0.4.3     rmarkdown_2.31     compiler_4.5.2     S7_0.2.1</code></pre>
+</div>
 </div>
 
 
