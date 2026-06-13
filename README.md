@@ -16,48 +16,32 @@ Proyecto de portafolio para RRHH analítico y Bienestar Organizacional.
 
 ### Rotación por departamento
 
-```{r echo=FALSE, out.width='100%'}
-knitr::include_graphics("outputs/plots/01_rotacion_por_departamento.png")
-```
+![Rotación por departamento](outputs/plots/01_rotacion_por_departamento.png)
 
 ### Rotación por cargo
 
-```{r echo=FALSE, out.width='100%'}
-knitr::include_graphics("outputs/plots/02_rotacion_por_cargo.png")
-```
+![Rotación por cargo](outputs/plots/02_rotacion_por_cargo.png)
 
 ### Ingreso mensual y rotación
 
-```{r echo=FALSE, out.width='100%'}
-knitr::include_graphics("outputs/plots/03_ingreso_por_attrition.png")
-```
+![Ingreso mensual y rotación](outputs/plots/03_ingreso_por_attrition.png)
 
 ### Satisfacción laboral y rotación
 
-```{r echo=FALSE, out.width='100%'}
-knitr::include_graphics("outputs/plots/04_heatmap_satisfaccion.png")
-```
+![Satisfacción laboral y rotación](outputs/plots/04_heatmap_satisfaccion.png)
 
 ### Horas extraordinarias y rotación
 
-```{r echo=FALSE, out.width='100%'}
-knitr::include_graphics("outputs/plots/05_rotacion_overtime.png")
-```
+![Horas extraordinarias y rotación](outputs/plots/05_rotacion_overtime.png)
 
 ### Antigüedad y riesgo de salida
 
-```{r echo=FALSE, out.width='100%'}
-knitr::include_graphics("outputs/plots/06_rotacion_por_antiguedad.png")
-```
+![Antigüedad y riesgo de salida](outputs/plots/06_rotacion_por_antiguedad.png)
 
 ### Edad e ingreso mensual
 
-```{r echo=FALSE, out.width='100%'}
-knitr::include_graphics("outputs/plots/07_edad_ingreso_attrition.png")
-```
+![Edad e ingreso mensual](outputs/plots/07_edad_ingreso_attrition.png)
 
 ### Dashboard ejecutivo
 
-```{r echo=FALSE, out.width='100%'}
-knitr::include_graphics("outputs/plots/08_dashboard_metricas.png")
-``` 
+![Dashboard ejecutivo](outputs/plots/08_dashboard_metricas.png)
