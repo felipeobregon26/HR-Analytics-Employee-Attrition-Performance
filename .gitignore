@@ -12,7 +12,6 @@ __pycache__/
 .ipynb_checkpoints/
 
 # Outputs
-outputs/plots/*.png
 outputs/plots/*.pdf
 
 # Sistema
